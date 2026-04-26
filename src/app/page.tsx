@@ -141,24 +141,16 @@ export default function Home() {
         }
       }
 
-      // Twilio Template Execution
-      const res = await fetch("/api/send-whatsapp", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ 
-          message: `Hey ${leadName.split(" ")[0]}, sharing a quick summary...`, 
-          to: leadPhone, 
-          mediaUrl: pdfUrl 
-        })
-      });
-      const data = await res.json();
-      if (res.ok) {
-        setNudgeApproved(true);
-        alert("WhatsApp message sent successfully!");
-        setTimeout(() => setNudgeApproved(false), 2000);
-      } else {
-        alert(`Failed to send WhatsApp message: ${data.error}`);
-      }
+      const finalMessage = pdfUrl 
+        ? `${nudge}\n\n📄 View your Sales Brief: ${pdfUrl}` 
+        : nudge;
+
+      const cleanPhone = leadPhone.replace(/[\s\-\+()]/g, '');
+      const waUrl = `https://wa.me/${cleanPhone}?text=${encodeURIComponent(finalMessage)}`;
+      window.open(waUrl, '_blank');
+
+      setNudgeApproved(true);
+      setTimeout(() => setNudgeApproved(false), 2000);
     } catch (err) {
       console.error(err);
       alert("Error sending WhatsApp message.");
