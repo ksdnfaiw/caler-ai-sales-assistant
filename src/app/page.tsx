@@ -114,10 +114,11 @@ export default function Home() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ message: nudge, to: leadPhone })
       });
+      const data = await res.json();
       if (res.ok) {
         alert("WhatsApp message sent successfully!");
       } else {
-        alert("Failed to send WhatsApp message.");
+        alert(`Failed to send WhatsApp message: ${data.error}`);
       }
     } catch (err) {
       console.error(err);

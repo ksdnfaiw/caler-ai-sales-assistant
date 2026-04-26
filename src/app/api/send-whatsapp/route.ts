@@ -23,8 +23,8 @@ export async function POST(req: Request) {
     });
 
     return NextResponse.json({ success: true, sid: messageResponse.sid });
-  } catch (error) {
+  } catch (error: any) {
     console.error("Twilio API error:", error);
-    return NextResponse.json({ error: 'Failed to send WhatsApp message' }, { status: 500 });
+    return NextResponse.json({ error: error.message || 'Failed to send WhatsApp message' }, { status: 500 });
   }
 }
