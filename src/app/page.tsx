@@ -7,6 +7,7 @@ export default function Home() {
   const [leadName, setLeadName] = useState("");
   const [leadRole, setLeadRole] = useState("");
   const [leadPhone, setLeadPhone] = useState("");
+  const [bdaPhone, setBdaPhone] = useState("");
   const [transcript, setTranscript] = useState("");
   
   const [isUploadingAudio, setIsUploadingAudio] = useState(false);
@@ -34,6 +35,14 @@ export default function Home() {
       });
       const data = await res.json();
       if (data.nudge) setNudge(data.nudge);
+      // Automatically send the internal nudge to the BDA via Twilio
+      if (bdaPhone) {
+        fetch("/api/send-whatsapp", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ message: data.nudge, to: bdaPhone })
+        }).catch(err => console.error("Failed to send internal BDA nudge:", err));
+      }
     } catch (err) {
       console.error(err);
       alert("Failed to generate nudge.");
@@ -142,8 +151,8 @@ export default function Home() {
       }
 
       const finalMessage = pdfUrl 
-        ? `${nudge}\n\n📄 View your Sales Brief: ${pdfUrl}` 
-        : nudge;
+        ? `Hi ${leadName.split(' ')[0]}, sharing a quick summary of our discussion:\n\n📄 View your Sales Brief: ${pdfUrl}` 
+        : `Hi ${leadName.split(' ')[0]}, following up on our discussion!`;
 
       const cleanPhone = leadPhone.replace(/[\s\-\+()]/g, '');
       const waUrl = `https://wa.me/${cleanPhone}?text=${encodeURIComponent(finalMessage)}`;
@@ -197,11 +206,21 @@ export default function Home() {
                 />
               </div>
               <div>
-                <label className="font-label-caps text-[12px] font-semibold uppercase tracking-wider text-[#46464a] mb-2 block">WHATSAPP NUMBER</label>
+                <label className="font-label-caps text-[12px] font-semibold uppercase tracking-wider text-[#46464a] mb-2 block">LEAD WHATSAPP NUMBER</label>
                 <input 
                   value={leadPhone}
                   onChange={e => setLeadPhone(e.target.value)}
                   className="w-full bg-[#f3f3f5] border border-[#c7c6ca] rounded-lg px-4 py-3 font-body-md focus:border-[#0058bc] focus:ring-4 focus:ring-[#0058bc]/10 transition-all focus:outline-none" 
+                  placeholder="e.g. +14155238886" 
+                  type="tel"
+                />
+              </div>
+              <div>
+                <label className="font-label-caps text-[12px] font-semibold uppercase tracking-wider text-[#0058bc] mb-2 block">INTERNAL BDA WHATSAPP NUMBER</label>
+                <input 
+                  value={bdaPhone}
+                  onChange={e => setBdaPhone(e.target.value)}
+                  className="w-full bg-[#0058bc]/5 border border-[#0058bc]/20 rounded-lg px-4 py-3 font-body-md focus:border-[#0058bc] focus:ring-4 focus:ring-[#0058bc]/10 transition-all focus:outline-none" 
                   placeholder="e.g. +14155238886" 
                   type="tel"
                 />

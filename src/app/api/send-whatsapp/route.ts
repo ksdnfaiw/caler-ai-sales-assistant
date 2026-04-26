@@ -35,29 +35,12 @@ export async function POST(req: Request) {
     }
 
     const messagePayload: any = {
-      contentSid: 'HX6b6ef7b9a3d446e20ca79f7da108975d',
+      body: message,
       from: `whatsapp:${process.env.TWILIO_PHONE_NUMBER}`,
       to: `whatsapp:${to}`
     };
 
-    // We pass the lead's name (which is in the 'message' variable from frontend) as the first variable, 
-    // and the PDF URL as the second, in case the template uses them.
-    messagePayload.contentVariables = JSON.stringify({
-      "1": message,
-      "2": finalMediaUrl || ""
-    });
-
     const messageResponse = await client.messages.create(messagePayload);
-    
-    // If the template does not inherently include the media URL, we send the PDF as a follow-up document message.
-    if (finalMediaUrl) {
-      await client.messages.create({
-        body: "📄 Here is your Sales Brief PDF:",
-        mediaUrl: [finalMediaUrl],
-        from: `whatsapp:${process.env.TWILIO_PHONE_NUMBER}`,
-        to: `whatsapp:${to}`
-      });
-    }
 
     return NextResponse.json({ success: true, sid: messageResponse.sid, mediaUrl });
   } catch (error: any) {
