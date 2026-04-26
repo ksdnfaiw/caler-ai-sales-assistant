@@ -1,36 +1,47 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Scaler AI Sales Assistant
 
-## Getting Started
+A Next.js web application built for sales representatives to intelligently nurture leads with AI-powered context, dynamic PDF generation, and automated WhatsApp outreach.
 
-First, run the development server:
+## Features
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+- **Apple-Inspired UI**: Clean, minimal, and premium interface built with Tailwind CSS.
+- **Audio Upload & Transcription**: Upload call recordings (MP3, WAV, M4A) and securely transcribe them using Groq's high-speed `whisper-large-v3-turbo` model.
+- **AI Pre-Call Nudge**: Automatically generate highly personalized, human-tone WhatsApp messages based on the lead's profile and call transcript using the Groq `llama-3.1-8b-instant` model.
+- **Dynamic Sales Brief Generation**: Analyzes call transcripts to produce structured Executive Summaries (Intro, ROI Alignment, 90-Day Plan) dynamically.
+- **PDF Export**: Seamlessly converts the generated Sales Brief into a downloadable PDF format using `html2pdf.js`.
+- **WhatsApp Integration**: Sends the approved Pre-Call Nudge directly to the lead via the Twilio Messaging API.
+
+## Tech Stack
+
+- **Framework**: Next.js (App Router)
+- **Styling**: Tailwind CSS v4
+- **Language**: TypeScript
+- **AI Models**: Groq (`whisper-large-v3-turbo` & `llama-3.1-8b-instant`)
+- **Messaging**: Twilio
+- **PDF Generation**: `html2pdf.js`
+- **Icons**: Lucide React & Google Material Symbols
+
+## Environment Variables
+
+To run this project, you will need to add the following environment variables to your `.env.local` file:
+
+```env
+GROQ_API_KEY=your_groq_api_key
+TWILIO_ACCOUNT_SID=your_twilio_account_sid
+TWILIO_AUTH_TOKEN=your_twilio_auth_token
+TWILIO_PHONE_NUMBER=your_twilio_phone_number
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Running Locally
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+1. Install dependencies:
+```bash
+npm install
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+2. Start the development server:
+```bash
+npm run dev
+```
 
-## Learn More
-
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+3. Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
