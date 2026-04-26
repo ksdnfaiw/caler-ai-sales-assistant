@@ -10,6 +10,7 @@ export default function Home() {
   const [transcript, setTranscript] = useState("");
   
   const [isUploadingAudio, setIsUploadingAudio] = useState(false);
+  const [isSending, setIsSending] = useState(false);
   
   const [nudge, setNudge] = useState("");
   const [pdfContent, setPdfContent] = useState<any>(null);
@@ -106,17 +107,34 @@ export default function Home() {
   };
 
   const approveAndSendWhatsApp = async () => {
-    if (!nudge) return;
+    if (!nudge || !leadPhone) {
+      return alert("Please generate a nudge and provide a WhatsApp number.");
+    }
+    setIsSending(true);
     try {
-      setNudgeApproved(true);
+      let pdfBase64 = null;
+      if (typeof window !== "undefined" && pdfRef.current) {
+        const html2pdf = (await import("html2pdf.js")).default;
+        const opt = {
+          margin: 1,
+          filename: `Sales_Brief.pdf`,
+          image: { type: 'jpeg' as const, quality: 0.98 },
+          html2canvas: { scale: 2 },
+          jsPDF: { unit: 'in', format: 'letter', orientation: 'portrait' as const }
+        };
+        pdfBase64 = await html2pdf().set(opt).from(pdfRef.current).outputPdf('datauristring');
+      }
+
       const res = await fetch("/api/send-whatsapp", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ message: nudge, to: leadPhone })
+        body: JSON.stringify({ message: nudge, to: leadPhone, pdfBase64 })
       });
       const data = await res.json();
       if (res.ok) {
+        setNudgeApproved(true);
         alert("WhatsApp message sent successfully!");
+        setTimeout(() => setNudgeApproved(false), 2000);
       } else {
         alert(`Failed to send WhatsApp message: ${data.error}`);
       }
@@ -124,7 +142,7 @@ export default function Home() {
       console.error(err);
       alert("Error sending WhatsApp message.");
     } finally {
-      setTimeout(() => setNudgeApproved(false), 2000);
+      setIsSending(false);
     }
   };
 
@@ -326,11 +344,11 @@ export default function Home() {
             <button className="px-8 py-3 apple-card font-button text-[15px] font-medium text-[#030304] hover:bg-[#f3f3f5] transition-all active:scale-95">Edit Content</button>
             <button 
               onClick={approveAndSendWhatsApp}
-              disabled={!nudge || nudgeApproved}
+              disabled={!nudge || nudgeApproved || isSending}
               className="px-10 py-3 bg-[#0058bc] text-white font-button text-[15px] font-medium rounded-full shadow-lg hover:shadow-blue-500/20 hover:bg-[#0058bc]/90 active:scale-95 transition-all disabled:opacity-50 flex items-center gap-2"
             >
-              {nudgeApproved ? <Check className="w-5 h-5" /> : null}
-              {nudgeApproved ? "Sent!" : "Approve & Send"}
+              {isSending ? <Loader2 className="w-5 h-5 animate-spin" /> : nudgeApproved ? <Check className="w-5 h-5" /> : null}
+              {isSending ? "Sending..." : nudgeApproved ? "Sent!" : "Approve & Send"}
             </button>
           </div>
         </div>
