@@ -9,6 +9,8 @@ export default function Home() {
   const [leadPhone, setLeadPhone] = useState("");
   const [transcript, setTranscript] = useState("");
   
+  const [isUploadingAudio, setIsUploadingAudio] = useState(false);
+  
   const [nudge, setNudge] = useState("");
   const [pdfContent, setPdfContent] = useState<any>(null);
   
@@ -56,6 +58,36 @@ export default function Home() {
       alert("Failed to generate PDF content.");
     } finally {
       setIsGeneratingPdf(false);
+    }
+  };
+
+  const handleAudioUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setIsUploadingAudio(true);
+    try {
+      const formData = new FormData();
+      formData.append("file", file);
+
+      const res = await fetch("/api/transcribe-audio", {
+        method: "POST",
+        body: formData,
+      });
+      
+      const data = await res.json();
+      if (res.ok && data.text) {
+        setTranscript(data.text);
+      } else {
+        alert(data.error || "Failed to transcribe audio.");
+      }
+    } catch (err) {
+      console.error("Audio upload error:", err);
+      alert("An error occurred during audio upload.");
+    } finally {
+      setIsUploadingAudio(false);
+      // Reset input value so same file can be uploaded again if needed
+      e.target.value = '';
     }
   };
 
@@ -158,11 +190,28 @@ export default function Home() {
             />
           </section>
 
-          <section className="apple-card apple-shadow p-6 border-dashed border-2 border-[#c7c6ca]">
-            <div className="flex flex-col items-center justify-center py-4 text-center cursor-pointer hover:bg-[#f3f3f5] transition-colors rounded-xl group">
-              <FileUp className="w-8 h-8 text-[#77767b] group-hover:text-[#0058bc] transition-colors mb-2" />
-              <h3 className="font-body-lg text-[18px] font-medium">Upload Call Audio</h3>
-              <p className="font-body-sm text-[14px] text-[#46464a]">MP3, WAV, or M4A (Max 50MB)</p>
+          <section className="apple-card apple-shadow p-6 border-dashed border-2 border-[#c7c6ca] relative overflow-hidden">
+            <input 
+              type="file" 
+              accept="audio/*" 
+              onChange={handleAudioUpload}
+              disabled={isUploadingAudio}
+              className="absolute inset-0 w-full h-full opacity-0 cursor-pointer disabled:cursor-not-allowed z-10" 
+            />
+            <div className="flex flex-col items-center justify-center py-4 text-center hover:bg-[#f3f3f5] transition-colors rounded-xl group">
+              {isUploadingAudio ? (
+                <>
+                  <Loader2 className="w-8 h-8 text-[#0058bc] animate-spin mb-2" />
+                  <h3 className="font-body-lg text-[18px] font-medium text-[#0058bc]">Transcribing Audio...</h3>
+                  <p className="font-body-sm text-[14px] text-[#46464a]">This may take a few seconds</p>
+                </>
+              ) : (
+                <>
+                  <FileUp className="w-8 h-8 text-[#77767b] group-hover:text-[#0058bc] transition-colors mb-2" />
+                  <h3 className="font-body-lg text-[18px] font-medium">Upload Call Audio</h3>
+                  <p className="font-body-sm text-[14px] text-[#46464a]">MP3, WAV, or M4A (Max 25MB)</p>
+                </>
+              )}
             </div>
           </section>
 
